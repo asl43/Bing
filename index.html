@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Multiplayer - Sorteio Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; width: 100%; }
+        .header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); animation: pulse 2s infinite; }
+        .url-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; backdrop-filter: blur(10px); }
+        .url-info strong { font-size: 1.2rem; color: #ffd93d; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .bingo-image-container { position: relative; text-align: center; margin-bottom: 30px; }
+        .bingo-image { width: 100%; max-width: 600px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); transition: transform 0.5s ease; }
+        .bingo-image:hover { transform: scale(1.02); }
+        .start-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 15px; text-align: center; backdrop-filter: blur(5px); }
+        .start-menu button { padding: 15px 30px; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; transition: all 0.3s ease; margin: 10px; }
+        .start-menu button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+        .participant-form, .bingo-card, .control-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; margin-bottom: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .game-layout { display: grid; grid-template-columns: 1fr 350px; gap: 30px; }
+        .bingo-section { display: grid; gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; background: rgba(255, 255, 255, 0.9); color: #333; transition: border-color 0.3s ease; }
+        .form-group input.valid { border: 2px solid #2ecc71; }
+        .form-group input.invalid { border: 2px solid #e74c3c; }
+        .bingo-card { padding: 30px; }
+        .player-info { text-align: center; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; }
+        .bingo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 20px; }
+        .bingo-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
+        .header-cell { background: #ff6b6b; color: white; text-align: center; padding: 15px; font-weight: bold; font-size: 1.2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .bingo-cell { background: rgba(255, 255, 255, 0.9); color: #333; border: none; width: 60px; height: 60px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .bingo-cell:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .bingo-cell.marked { background: #4ecdc4; color: white; animation: markAnimation 0.5s ease; }
+        .bingo-cell.free { background: #ffd93d; color: #333; }
+        @keyframes markAnimation { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.2) rotate(180deg); } 100% { transform: scale(1) rotate(360deg); } }
+        .control-panel { padding: 20px; height: fit-content; }
+        .current-ball { text-align: center; margin-bottom: 20px; }
+        .ball-display { width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffd93d, #ff6b6b); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin: 0 auto 15px; animation: bounce 1s infinite; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
+        .ball-letter { font-size: 1rem; font-weight: bold; }
+        .ball-display span { font-size: 2.5rem; }
+        .game-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        button { padding: 15px 25px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-primary { background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; }
+        .btn-success { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+        .btn-info { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .btn-tv { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+        button:disabled { background: #95a5a6 !important; cursor: not-allowed; transform: none; box-shadow: none; }
+        .called-numbers { margin-top: 20px; }
+        .called-numbers h3 { margin-bottom: 15px; text-align: center; }
+        .numbers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; max-height: 200px; overflow-y: auto; }
+        .called-number { background: rgba(255, 255, 255, 0.2); padding: 8px; border-radius: 5px; text-align: center; font-size: 0.9rem; }
+        .winner-modal, .admin-modal, .tv-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.5s ease; }
+        .winner-content, .admin-content, .tv-content { background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); animation: slideIn 0.5s ease; max-width: 90%; max-height: 90vh; overflow-y: auto; }
+        .tv-content { max-width: 95%; max-height: 95vh; padding: 20px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(-50px) scale(0.8); } to { transform: translateY(0) scale(1); } }
+        .winner-content h2 { font-size: 3rem; margin-bottom: 20px; animation: celebration 1s infinite; }
+        @keyframes celebration { 0%, 100% { transform: rotate(-5deg) scale(1); } 50% { transform: rotate(5deg) scale(1.1); } }
+        .hidden { display: none !important; }
+        .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; }
+        .alert-warning { background: rgba(243, 156, 18, 0.2); border: 1px solid #f39c12; color: #f39c12; }
+        .status-info { text-align: center; font-size: 0.9rem; opacity: 0.8; margin-bottom: 20px; }
+        .ip-info { font-size: 0.8rem; opacity: 0.7; text-align: center; margin-top: 10px; }
+        .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1001; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background-color: #333; color: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); animation: toast-in 0.5s forwards, toast-out 0.5s 2.5s forwards; min-width: 250px; text-align: center; }
+        .toast.success { background-color: #2ecc71; }
+        .toast.error { background-color: #e74c3c; }
+        .toast.info { background-color: #3498db; }
+        .toast.warning { background-color: #f39c12; }
+        @keyframes toast-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }
+        #adminButton { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background: #ff6b6b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 999; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); transition: transform 0.3s ease; }
+        #adminButton:hover { transform: scale(1.1); }
+        .admin-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; text-align: center; border: 2px solid rgba(255, 255, 255, 0.2); }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #4ecdc4; display: block; }
+        .stat-label { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+        .admin-participants { margin-top: 20px; }
+        .participant-item { background: rgba(255, 255, 255, 0.1); padding: 15px; margin-bottom: 15px; border-radius: 12px; border-left: 5px solid #4ecdc4; transition: all 0.3s ease; }
+        .participant-item.winner { border-left: 5px solid #2ecc71; background: rgba(46, 204, 113, 0.2); animation: winnerGlow 2s infinite alternate; }
+        @keyframes winnerGlow { from { box-shadow: 0 0 10px rgba(46, 204, 113, 0.5); } to { box-shadow: 0 0 20px rgba(46, 204, 113, 0.8); } }
+        .participant-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .participant-name { font-size: 1.2rem; font-weight: bold; color: #4ecdc4; }
+        .participant-status { font-size: 0.9rem; padding: 5px 10px; border-radius: 15px; background: rgba(255, 255, 255, 0.2); }
+        .participant-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.85rem; opacity: 0.9; }
+        .participant-tech { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .tv-participants-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; max-height: 70vh; overflow-y: auto; }
+        .tv-participant-card { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; border-left: 5px solid #4ecdc4; transition: all 0.3s ease; }
+        .tv-participant-card.winner { border-left: 5px solid #2ecc71; background: rgba(46, 204, 113, 0.2); animation: winnerGlow 2s infinite alternate; }
+        .tv-participant-name { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; color: #4ecdc4; }
+        .tv-participant-info { font-size: 1.1rem; line-height: 1.6; }
+        .tv-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .tv-stat-card { background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 15px; text-align: center; }
+        .tv-stat-number { font-size: 2.5rem; font-weight: bold; color: #4ecdc4; display: block; }
+        .tv-stat-label { font-size: 1.1rem; opacity: 0.8; margin-top: 10px; }
+        @media (max-width: 1024px) {
+            .game-layout { grid-template-columns: 1fr; gap: 20px; }
+            .tv-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .bingo-cell { width: 45px; height: 45px; font-size: 0.9rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .tv-participants-grid { grid-template-columns: 1fr; }
+            .tv-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="url-info">
+                <strong>🌐 URL do Sorteio:</strong> https://asl43.github.io/Bin/<br>
+                <small>Compartilhe este link para que outros participem!</small>
+            </div>
+            <h1><i class="fas fa-bullseye"></i> BINGO MULTIPLAYER</h1>
+        </div>
+
+        <div id="introScreen">
+            <div class="bingo-image-container">
+                <img src="https://i.ibb.co/6P0xH1n/bingo-image.png" alt="Imagem de Bingo" class="bingo-image">
+                <div class="start-menu">
+                    <button id="showFormBtn"><i class="fas fa-play-circle"></i> Gerar Minha Cartela</button>
+                    <button id="showTvBtn" class="btn-tv"><i class="fas fa-tv"></i> Modo TV</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mainGame" class="hidden">
+            <div class="game-layout">
+                <div class="bingo-section">
+                    <div class="participant-form hidden" id="registrationForm">
+                        <h2><i class="fas fa-clipboard-list"></i> Participar do Sorteio</h2>
+                        <div class="form-group">
+                            <label for="playerName">Nome do Participante:</label>
+                            <input type="text" id="playerName" placeholder="Digite seu nome" maxlength="50" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerPhone">Telefone/WhatsApp:</label>
+                            <input type="tel" id="playerPhone" placeholder="(00) 00000-0000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerEmail">Email (opcional):</label>
+                            <input type="email" id="playerEmail" placeholder="seu@email.com">
+                        </div>
+                        <button class="btn-primary" id="joinGame"><i class="fas fa-ticket-alt"></i> Gerar Minha Cartela</button>
+                        <div class="ip-info" id="ipInfo">Carregando informações...</div>
+                    </div>
+                    <div class="bingo-card hidden" id="bingoCard">
+                        <div class="player-info" id="playerInfo"></div>
+                        <div class="alert alert-warning" id="gameAlert">
+                            <strong>⚠️ Atenção:</strong> Aguarde o administrador iniciar o sorteio oficial!
+                        </div>
+                        <div class="bingo-header">
+                            <div class="header-cell">B</div>
+                            <div class="header-cell">I</div>
+                            <div class="header-cell">N</div>
+                            <div class="header-cell">G</div>
+                            <div class="header-cell">O</div>
+                        </div>
+                        <div class="bingo-grid" id="bingoGrid"></div>
+                        <button class="btn-success" id="declareBingo" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-medal"></i> DECLARAR BINGO!
+                        </button>
+                    </div>
+                </div>
+                <div class="control-panel">
+                    <div class="current-ball">
+                        <div class="ball-display" id="ballDisplay">
+                            <span id="ballLetter">-</span>
+                            <span id="ballNumber">-</span>
+                        </div>
+                    </div>
+                    <div class="called-numbers">
+                        <h3><i class="fas fa-list-ol"></i> Números Sorteados</h3>
+                        <div class="numbers-grid" id="calledNumbers"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminButton">*</div>
+
+    <div id="adminModal" class="admin-modal hidden">
+        <div class="admin-content">
+            <h2 id="modalTitle"><i class="fas fa-user-shield"></i> Acesso Administrativo</h2>
+            <div id="authSection">
+                <p>Insira a senha para acessar o painel:</p>
+                <input type="password" id="adminPassword" placeholder="Senha">
+                <button class="btn-primary" id="loginBtn">Entrar</button>
+                <button class="btn-danger" onclick="window.bingoGame.closeAdminModal()" style="margin-top: 10px;">Fechar</button>
+            </div>
+            <div id="adminPanelContent" class="admin-panel hidden">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalAccess">0</span>
+                        <span class="stat-label">Total de Acessos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="activeParticipants">0</span>
+                        <span class="stat-label">Participantes Ativos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="uniqueIPs">0</span>
+                        <span class="stat-label">IPs Únicos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="gameStatus">Aguardando</span>
+                        <span class="stat-label">Status do Jogo</span>
+                    </div>
+                </div>
+                <div class="admin-controls">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="winCondition">Condição de Vitória:</label>
+                        <select id="winCondition" class="btn-info" style="width: 100%; background: rgba(255,255,255,0.2); border: none; font-weight: bold; color: white;">
+                            <option value="full_card">Cartela Cheia</option>
+                            <option value="horizontal">Linha Horizontal</option>
+                            <option value="vertical">Linha Vertical</option>
+                            <option value="diagonal">Diagonal</option>
+                        </select>
+                    </div>
+                    <button class="btn-success" id="startGlobalGame"><i class="fas fa-play"></i> Iniciar Sorteio</button>
+                    <button class="btn-warning" id="pauseGlobalGame" disabled><i class="fas fa-pause"></i> Pausar Sorteio</button>
+                    <button class="btn-info" id="resetGlobalGame"><i class="fas fa-undo"></i> Resetar Jogo</button>
+                    <button class="btn-tv" id="openTvMode"><i class="fas fa-tv"></i> Abrir Modo TV</button>
+                    <button class="btn-danger" id="clearParticipants"><i class="fas fa-trash-alt"></i> Limpar Participantes</button>
+                    <button class="btn-danger" onclick="window.bingoGame.closeAdminModal()"><i class="fas fa-times"></i> Fechar Painel</button>
+                </div>
+                <div class="admin-participants">
+                    <h3><i class="fas fa-users"></i> Participantes Registrados (<span id="participantCount">0</span>)</h3>
+                    <div id="participantsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tvModal" class="tv-modal hidden">
+        <div class="tv-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h1><i class="fas fa-tv"></i> MODO TV - PARTICIPANTES</h1>
+                <button class="btn-danger" onclick="window.bingoGame.closeTvMode()">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+            </div>
+            <div class="tv-stats" id="tvStats">
+                <div class="tv-stat-card">
+                    <span class="tv-stat-number" id="tvTotalAccess">0</span>
+                    <span class="tv-stat-label">Total de Acessos</span>
+                </div>
+                <div class="tv-stat-card">
+                    <span class="tv-stat-number" id="tvActiveParticipants">0</span>
+                    <span class="tv-stat-label">Participantes Ativos</span>
+                </div>
+                <div class="tv-stat-card">
+                    <span class="tv-stat-number" id="tvUniqueIPs">0</span>
+                    <span class="tv-stat-label">IPs Únicos</span>
+                </div>
+                <div class="tv-stat-card">
+                    <span class="tv-stat-number" id="tvGameStatus">Aguardando</span>
+                    <span class="tv-stat-label">Status do Jogo</span>
+                </div>
+            </div>
+            <div class="tv-participants-grid" id="tvParticipantsList">
+                <div style="text-align: center; padding: 40px; opacity: 0.7; grid-column: 1 / -1;">
+                    <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <p style="font-size: 1.5rem;">Nenhum participante registrado ainda</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        class BingoMultiplayer {
+            constructor() {
+                this.participants = [];
+                this.calledNumbers = [];
+                this.isGlobalGameRunning = false;
+                this.interval = null;
+                this.availableNumbers = [];
+                this.currentBall = null;
+                this.userIP = null;
+                this.userLocation = null;
+                this.deviceType = null;
+                this.currentPlayer = null;
+                this.adminPassword = 'admin123';
+                this.winCondition = 'full_card';
+                this.accessStats = { total: 0, uniqueIPs: new Set(), startTime: new Date() };
+                this.storage = new Map();
+                this.initializeGame();
+                this.setupEventListeners();
+                this.getUserInfo();
+                this.loadStoredData();
+                this.updateWinCondition();
+            }
+
+            initializeGame() {
+                this.generateAvailableNumbers();
+                this.updateStats();
+            }
+
+            async getUserInfo() {
+                try {
+                    const response = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await response.json();
+                    this.userIP = ipData.ip;
+                    try {
+                        const geoResponse = await fetch(`https://ipapi.co/${this.userIP}/json/`);
+                        const geoData = await geoResponse.json();
+                        this.userLocation = {
+                            city: geoData.city || 'Desconhecida',
+                            region: geoData.region || 'Desconhecida',
+                            country: geoData.country_name || 'Desconhecido',
+                            org: geoData.org || 'Desconhecido',
+                            timezone: geoData.timezone || 'UTC'
+                        };
+                    } catch (geoError) {
+                        this.userLocation = { city: 'Desconhecida', region: 'Desconhecida', country: 'Desconhecido', org: 'Desconhecido', timezone: 'UTC' };
+                    }
+                } catch (error) {
+                    console.log('Erro ao obter IP via API, usando fallback:', error);
+                    this.userIP = this.generateMockIP();
+                    this.userLocation = { city: 'Desconhecida', region: 'Desconhecida', country: 'Brasil', org: 'Provedor Local', timezone: 'America/Sao_Paulo' };
+                }
+                this.deviceType = this.getDeviceType();
+                this.updateIPInfo();
+                this.registerAccess(this.userIP);
+            }
+
+            updateIPInfo() {
+                const now = new Date();
+                document.getElementById('ipInfo').innerHTML = `
+                    <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                        <strong>🔍 Informações de Acesso:</strong><br><br>
+                        <strong>🌐 IP:</strong> ${this.userIP}<br>
+                        <strong>📍 Localização:</strong> ${this.userLocation.city}, ${this.userLocation.region}<br>
+                        <strong>🏴 País:</strong> ${this.userLocation.country}<br>
+                        <strong>🏢 Provedor:</strong> ${this.userLocation.org}<br>
+                        <strong>💻 Dispositivo:</strong> ${this.deviceType}<br>
+                        <strong>🕐 Acesso em:</strong> ${now.toLocaleString('pt-BR')}<br>
+                        <strong>⏰ Fuso:</strong> ${this.userLocation.timezone}
+                    </div>
+                `;
+            }
+
+            getDeviceType() {
+                const ua = navigator.userAgent;
+                const screen = window.screen;
+                let device = 'Desktop';
+                let details = '';
+                if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                    device = 'Tablet';
+                } else if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                    device = 'Celular';
+                }
+                let os = 'Desconhecido';
+                if (ua.indexOf('Windows') !== -1) os = 'Windows';
+                else if (ua.indexOf('Mac') !== -1) os = 'MacOS';
+                else if (ua.indexOf('Linux') !== -1) os = 'Linux';
+                else if (ua.indexOf('Android') !== -1) os = 'Android';
+                else if (ua.indexOf('iOS') !== -1) os = 'iOS';
+                let browser = 'Desconhecido';
+                if (ua.indexOf('Chrome') !== -1) browser = 'Chrome';
+                else if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
+                else if (ua.indexOf('Safari') !== -1) browser = 'Safari';
+                else if (ua.indexOf('Edge') !== -1) browser = 'Edge';
+                details = `${device} (${os}, ${browser}) - ${screen.width}x${screen.height}`;
+                return details;
+            }
+
+            generateMockIP() {
+                return `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+            }
+
+            registerAccess(ip) {
+                this.accessStats.total++;
+                this.accessStats.uniqueIPs.add(ip);
+                this.saveStoredData();
+                this.updateStats();
+            }
+
+            updateStats() {
+                const elements = {
+                    'totalAccess': this.accessStats.total,
+                    'activeParticipants': this.participants.length,
+                    'uniqueIPs': this.accessStats.uniqueIPs.size,
+                    'gameStatus': this.isGlobalGameRunning ? 'Em Andamento' : 'Aguardando',
+                    'participantCount': this.participants.length
+                };
+                Object.keys(elements).forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = elements[id];
+                    }
+                });
+                const tvElements = {
+                    'tvTotalAccess': this.accessStats.total,
+                    'tvActiveParticipants': this.participants.length,
+                    'tvUniqueIPs': this.accessStats.uniqueIPs.size,
+                    'tvGameStatus': this.isGlobalGameRunning ? 'Ativo' : 'Pausado'
+                };
+                Object.keys(tvElements).forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = tvElements[id];
+                    }
+                });
+            }
+
+            loadStoredData() {
+                console.log('Dados carregados da memória');
+            }
+
+            saveStoredData() {
+                this.storage.set('participants', JSON.stringify(this.participants));
+                this.storage.set('calledNumbers', JSON.stringify(this.calledNumbers));
+                this.storage.set('accessStats', JSON.stringify({ ...this.accessStats, uniqueIPsArray: Array.from(this.accessStats.uniqueIPs) }));
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            showForm() {
+                document.getElementById('introScreen').classList.add('hidden');
+                document.getElementById('mainGame').classList.remove('hidden');
+                document.getElementById('registrationForm').classList.remove('hidden');
+            }
+
+            showTvMode() {
+                document.getElementById('tvModal').classList.remove('hidden');
+                this.updateTvParticipants();
+                setInterval(() => {
+                    this.updateTvParticipants();
+                    this.updateStats();
+                }, 5000);
+            }
+
+            closeTvMode() {
+                document.getElementById('tvModal').classList.add('hidden');
+            }
+
+            joinGame() {
+                const name = document.getElementById('playerName').value.trim();
+                const phone = document.getElementById('playerPhone').value.trim();
+                const email = document.getElementById('playerEmail').value.trim();
+                if (!name || !phone) {
+                    this.showToast('Por favor, preencha nome e telefone!', 'warning');
+                    this.validateForm();
+                    return;
+                }
+                const existingParticipant = this.participants.find(p => p.ip === this.userIP);
+                if (existingParticipant) {
+                    this.showToast('Este IP já tem uma cartela ativa!', 'info');
+                    this.currentPlayer = existingParticipant;
+                } else {
+                    this.currentPlayer = {
+                        id: Date.now(),
+                        name: name,
+                        phone: phone,
+                        email: email,
+                        ip: this.userIP,
+                        location: this.userLocation,
+                        device: this.deviceType,
+                        joinTime: new Date(),
+                        bingoCard: this.generateBingoCard(),
+                        hasWon: false,
+                        lastActivity: new Date(),
+                        userAgent: navigator.userAgent,
+                        screenResolution: `${window.screen.width}x${window.screen.height}`,
+                        language: navigator.language,
+                        platform: navigator.platform
+                    };
+                    this.participants.push(this.currentPlayer);
+                    this.showToast('Cartela gerada com sucesso!', 'success');
+                }
+                this.saveStoredData();
+                this.showBingoCard();
+                this.updateParticipantsList();
+                this.updateTvParticipants();
+                this.updateStats();
+                this.updatePlayerBingoCard();
+            }
+
+            validateForm() {
+                const nameInput = document.getElementById('playerName');
+                const phoneInput = document.getElementById('playerPhone');
+                nameInput.classList.toggle('invalid', nameInput.value.trim() === '');
+                nameInput.classList.toggle('valid', nameInput.value.trim() !== '');
+                phoneInput.classList.toggle('invalid', phoneInput.value.trim() === '');
+                phoneInput.classList.toggle('valid', phoneInput.value.trim() !== '');
+            }
+
+            showBingoCard() {
+                document.getElementById('registrationForm').classList.add('hidden');
+                document.getElementById('bingoCard').classList.remove('hidden');
+                document.getElementById('playerInfo').innerHTML = `
+                    <div style="text-align: left;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <div>
+                                <strong style="font-size: 1.3rem; color: #4ecdc4;">
+                                    <i class="fas fa-user"></i> ${this.currentPlayer.name}
+                                </strong><br>
+                                <small><i class="fas fa-phone"></i> ${this.currentPlayer.phone}</small>
+                            </div>
+                            <div style="text-align: right;">
+                                <small style="opacity: 0.8;">ID: ${this.currentPlayer.id}</small><br>
+                                <small><i class="fas fa-clock"></i> ${this.currentPlayer.joinTime.toLocaleString('pt-BR')}</small>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.8rem; opacity: 0.7; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
+                            <i class="fas fa-map-marker-alt"></i> ${this.currentPlayer.location.city}, ${this.currentPlayer.location.region} | <i class="fas fa-desktop"></i> ${this.currentPlayer.device}
+                        </div>
+                    </div>
+                `;
+                this.renderBingoCard(this.currentPlayer.bingoCard);
+            }
+
+            generateBingoCard() {
+                const ranges = { B: [1, 15], I: [16, 30], N: [31, 45], G: [46, 60], O: [61, 75] };
+                const bingoCard = [];
+                for (let col = 0; col < 5; col++) {
+                    const column = [];
+                    const letter = ['B', 'I', 'N', 'G', 'O'][col];
+                    const [min, max] = ranges[letter];
+                    const usedNumbers = new Set();
+                    for (let row = 0; row < 5; row++) {
+                        if (col === 2 && row === 2) {
+                            column.push({ number: 'FREE', marked: true, isFree: true });
+                        } else {
+                            let number;
+                            do {
+                                number = Math.floor(Math.random() * (max - min + 1)) + min;
+                            } while (usedNumbers.has(number));
+                            usedNumbers.add(number);
+                            column.push({ number: number, marked: false, isFree: false });
+                        }
+                    }
+                    bingoCard.push(column);
+                }
+                return bingoCard;
+            }
+
+            renderBingoCard(bingoCard) {
+                const grid = document.getElementById('bingoGrid');
+                grid.innerHTML = '';
+                for (let row = 0; row < 5; row++) {
+                    for (let col = 0; col < 5; col++) {
+                        const cell = document.createElement('button');
+                        const cellData = bingoCard[col][row];
+                        cell.className = 'bingo-cell';
+                        cell.textContent = cellData.number;
+                        if (cellData.marked) {
+                            cell.classList.add(cellData.isFree ? 'free' : 'marked');
+                        }
+                        if (!cellData.isFree) {
+                            cell.addEventListener('click', () => this.toggleCell(col, row));
+                        }
+                        grid.appendChild(cell);
+                    }
+                }
+            }
+
+            toggleCell(col, row) {
+                if (!this.isGlobalGameRunning) {
+                    this.showToast('O sorteio não está em andamento!', 'info');
+                    return;
+                }
+                if (this.currentPlayer.bingoCard[col][row].isFree) return;
+                const clickedNumber = this.currentPlayer.bingoCard[col][row].number;
+                const isCalled = this.calledNumbers.some(ball => ball.number === clickedNumber);
+                if (isCalled) {
+                    this.currentPlayer.bingoCard[col][row].marked = !this.currentPlayer.bingoCard[col][row].marked;
+                    this.currentPlayer.lastActivity = new Date();
+                    this.renderBingoCard(this.currentPlayer.bingoCard);
+                    this.saveStoredData();
+                } else {
+                    this.showToast(`O número ${clickedNumber} ainda não foi sorteado!`, 'warning');
+                }
+            }
+
+            generateAvailableNumbers() {
+                this.availableNumbers = [];
+                const letters = ['B', 'I', 'N', 'G', 'O'];
+                const ranges = [[1, 15], [16, 30], [31, 45], [46, 60], [61, 75]];
+                for (let i = 0; i < 5; i++) {
+                    const letter = letters[i];
+                    const [min, max] = ranges[i];
+                    for (let num = min; num <= max; num++) {
+                        this.availableNumbers.push({ letter: letter, number: num });
+                    }
+                }
+            }
+
+            startGlobalGame() {
+                if (this.isGlobalGameRunning) return;
+                if (this.availableNumbers.length === 0) {
+                    this.showToast('Todos os números já foram sorteados!', 'warning');
+                    return;
+                }
+                this.isGlobalGameRunning = true;
+                document.getElementById('startGlobalGame').disabled = true;
+                document.getElementById('pauseGlobalGame').disabled = false;
+                document.getElementById('gameAlert').innerHTML = `<strong>🟢 Jogo em Andamento:</strong> Números serão sorteados automaticamente!`;
+                const speed = 3000;
+                this.interval = setInterval(() => {
+                    this.drawGlobalNumber();
+                }, speed);
+                this.updateStats();
+                this.showToast('Sorteio iniciado!', 'success');
+                this.saveStoredData();
+            }
+
+            pauseGlobalGame() {
+                if (!this.isGlobalGameRunning) return;
+                this.isGlobalGameRunning = false;
+                clearInterval(this.interval);
+                document.getElementById('startGlobalGame').disabled = false;
+                document.getElementById('pauseGlobalGame').disabled = true;
+                document.getElementById('gameAlert').innerHTML = `<strong>⚠️ Atenção:</strong> Sorteio pausado pelo administrador.`;
+                this.updateStats();
+                this.showToast('Sorteio pausado.', 'info');
+                this.saveStoredData();
+            }
+            
+            drawGlobalNumber() {
+                if (this.availableNumbers.length === 0) {
+                    this.pauseGlobalGame();
+                    this.showToast('Todos os números foram sorteados!', 'info');
+                    return;
+                }
+                const randomIndex = Math.floor(Math.random() * this.availableNumbers.length);
+                const drawnBall = this.availableNumbers.splice(randomIndex, 1)[0];
+                this.currentBall = drawnBall;
+                this.calledNumbers.push({ ...drawnBall, timestamp: new Date() });
+                this.updateBallDisplay(drawnBall);
+                this.updateCalledNumbers();
+                this.autoMarkAllParticipants(drawnBall);
+                this.checkAllParticipantsForBingo();
+                this.saveStoredData();
+                this.playNumberAudio(drawnBall.letter, drawnBall.number);
+            }
+
+            playNumberAudio(letter, number) {
+                const basePath = 'https://asl43.github.io/Bin/audios/';
+                const letterAudio = new Audio(`${basePath}${letter}.mp3`);
+                const numberAudio = new Audio(`${basePath}${number}.mp3`);
+
+                letterAudio.play().then(() => {
+                    setTimeout(() => {
+                        numberAudio.play().catch(e => console.error('Erro ao tocar áudio do número:', e));
+                    }, letterAudio.duration * 1000 + 100);
+                }).catch(e => console.error('Erro ao tocar áudio da letra:', e));
+            }
+
+            updateBallDisplay(ball) {
+                document.getElementById('ballLetter').textContent = ball.letter;
+                document.getElementById('ballNumber').textContent = ball.number;
+            }
+
+            updateCalledNumbers() {
+                const container = document.getElementById('calledNumbers');
+                container.innerHTML = '';
+                this.calledNumbers.forEach(ball => {
+                    const numberDiv = document.createElement('div');
+                    numberDiv.className = 'called-number';
+                    numberDiv.textContent = `${ball.letter}${ball.number}`;
+                    numberDiv.title = `Sorteado em: ${ball.timestamp ? ball.timestamp.toLocaleTimeString('pt-BR') : 'N/A'}`;
+                    container.appendChild(numberDiv);
+                });
+            }
+
+            autoMarkAllParticipants(ball) {
+                const columnIndex = ['B', 'I', 'N', 'G', 'O'].indexOf(ball.letter);
+                this.participants.forEach(participant => {
+                    if (participant.hasWon) return;
+                    for (let row = 0; row < 5; row++) {
+                        const cellData = participant.bingoCard[columnIndex][row];
+                        if (cellData.number === ball.number) {
+                            cellData.marked = true;
+                            break;
+                        }
+                    }
+                });
+                if (this.currentPlayer) {
+                    this.updatePlayerBingoCard();
+                }
+                this.updateTvParticipants();
+            }
+
+            checkAllParticipantsForBingo() {
+                if (!this.isGlobalGameRunning) return;
+                const winCondition = document.getElementById('winCondition').value;
+                this.participants.forEach(participant => {
+                    if (!participant.hasWon) {
+                        const hasWon = this.checkWinner(participant.bingoCard, winCondition);
+                        if (hasWon) {
+                            participant.hasWon = true;
+                            participant.winTime = new Date();
+                            this.showWinnerInAdminPanel(participant, hasWon);
+                            this.updateParticipantsList();
+                            this.updateTvParticipants();
+                            this.pauseGlobalGame();
+                            this.showToast(`Bingo automático detectado para ${participant.name}!`, 'success');
+                        }
+                    }
+                });
+            }
+
+            updateParticipantsList() {
+                const container = document.getElementById('participantsList');
+                if (!container) return;
+                container.innerHTML = '';
+                if (this.participants.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 20px;">Nenhum participante registrado ainda</p>';
+                    return;
+                }
+                this.participants.sort((a, b) => b.hasWon - a.hasWon);
+                this.participants.forEach(participant => {
+                    const item = document.createElement('div');
+                    item.className = 'participant-item';
+                    if (participant.hasWon) {
+                        item.classList.add('winner');
+                    }
+                    const winStatus = participant.hasWon ? '🏆 VENCEDOR' : '🎮 Jogando';
+                    const lastActivity = participant.lastActivity || participant.joinTime;
+                    item.innerHTML = `
+                        <div class="participant-header">
+                            <div class="participant-name">${participant.name}</div>
+                            <div class="participant-status">${winStatus}</div>
+                        </div>
+                        <div class="participant-details">
+                            <div><strong>📞 Telefone:</strong> ${participant.phone}</div>
+                            <div><strong>📧 Email:</strong> ${participant.email || 'N/A'}</div>
+                            <div><strong>📍 Localização:</strong> ${participant.location.city}, ${participant.location.region}</div>
+                            <div><strong>🏴 País:</strong> ${participant.location.country}</div>
+                            <div><strong>🕐 Entrada:</strong> ${participant.joinTime.toLocaleString('pt-BR')}</div>
+                            <div><strong>⏱️ Última Atividade:</strong> ${lastActivity.toLocaleString('pt-BR')}</div>
+                        </div>
+                        <div class="participant-tech">
+                            <strong>🌐 IP:</strong> ${participant.ip} | <strong>💻 Dispositivo:</strong> ${participant.device} | <strong>🔢 ID:</strong> ${participant.id}
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            updateTvParticipants() {
+                const container = document.getElementById('tvParticipantsList');
+                if (!container) return;
+                container.innerHTML = '';
+                if (this.participants.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; opacity: 0.7; grid-column: 1 / -1;">
+                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                            <p style="font-size: 1.5rem;">Nenhum participante registrado ainda</p>
+                        </div>
+                    `;
+                    return;
+                }
+                this.participants.sort((a, b) => b.hasWon - a.hasWon);
+                this.participants.forEach(participant => {
+                    const card = document.createElement('div');
+                    card.className = 'tv-participant-card';
+                    if (participant.hasWon) {
+                        card.classList.add('winner');
+                    }
+                    const winStatus = participant.hasWon ? `🏆 VENCEDOR em ${participant.winTime ? participant.winTime.toLocaleString('pt-BR') : 'N/A'}` : '🎮 Participando';
+                    card.innerHTML = `
+                        <div class="tv-participant-name">${participant.name}</div>
+                        <div class="tv-participant-info">
+                            <div style="margin-bottom: 10px;"><strong>Status:</strong> ${winStatus}</div>
+                            <div><strong>📞 Contato:</strong> ${participant.phone}</div>
+                            <div><strong>📍 Local:</strong> ${participant.location.city}, ${participant.location.region}, ${participant.location.country}</div>
+                            <div><strong>🕐 Entrada:</strong> ${participant.joinTime.toLocaleString('pt-BR')}</div>
+                            <div><strong>💻 Dispositivo:</strong> ${participant.device.split(' ')[0]} (${participant.ip})</div>
+                            <div style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
+                                <strong>ID:</strong> ${participant.id}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            declareBingo() {
+                if (!this.currentPlayer) {
+                    this.showToast('Gere sua cartela para jogar!', 'warning');
+                    return;
+                }
+                const winCondition = document.getElementById('winCondition').value;
+                const hasWon = this.checkWinner(this.currentPlayer.bingoCard, winCondition);
+                if (hasWon) {
+                    this.currentPlayer.hasWon = true;
+                    this.currentPlayer.winTime = new Date();
+                    this.showWinner(`
+                        <span style="font-size: 1.5rem;">🎉 PARABÉNS ${this.currentPlayer.name}! 🎉</span><br><br>
+                        Você fez BINGO com <strong>${hasWon}</strong>!<br><br>
+                        <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                            <strong>🏆 Dados do Vencedor:</strong><br>
+                            <strong>📞 Contato:</strong> ${this.currentPlayer.phone}<br>
+                            <strong>📧 Email:</strong> ${this.currentPlayer.email || 'N/A'}<br>
+                            <strong>📍 Localização:</strong> ${this.currentPlayer.location.city}, ${this.currentPlayer.location.region}<br>
+                            <strong>🌐 IP:</strong> ${this.currentPlayer.ip}<br>
+                            <strong>💻 Dispositivo:</strong> ${this.currentPlayer.device}<br>
+                            <strong>🕐 Vitória em:</strong> ${this.currentPlayer.winTime.toLocaleString('pt-BR')}<br>
+                            <strong>🔢 ID:</strong> ${this.currentPlayer.id}
+                        </div>
+                    `);
+                    this.saveStoredData();
+                    this.updateParticipantsList();
+                    this.updateTvParticipants();
+                    this.pauseGlobalGame();
+                } else {
+                    this.showToast('Ainda não é BINGO! Continue jogando...', 'warning');
+                }
+            }
+
+            checkWinner(bingoCard, condition) {
+                const checkRows = () => {
+                    for (let row = 0; row < 5; row++) {
+                        if (bingoCard.every(col => col[row].marked)) {
+                            return `Linha Horizontal ${row + 1}`;
+                        }
+                    }
+                    return false;
+                };
+
+                const checkCols = () => {
+                    for (let col = 0; col < 5; col++) {
+                        if (bingoCard[col].every(cell => cell.marked)) {
+                            return `Coluna ${['B', 'I', 'N', 'G', 'O'][col]}`;
+                        }
+                    }
+                    return false;
+                };
+
+                const checkDiagonals = () => {
+                    let mainDiagonal = true;
+                    for (let i = 0; i < 5; i++) {
+                        if (!bingoCard[i][i].marked) {
+                            mainDiagonal = false;
+                            break;
+                        }
+                    }
+                    if (mainDiagonal) return 'Diagonal Principal (\\)';
+
+                    let antiDiagonal = true;
+                    for (let i = 0; i < 5; i++) {
+                        if (!bingoCard[i][4 - i].marked) {
+                            antiDiagonal = false;
+                            break;
+                        }
+                    }
+                    if (antiDiagonal) return 'Diagonal Secundária (/)';
+
+                    return false;
+                };
+
+                const checkFullCard = () => {
+                    if (bingoCard.every(col => col.every(cell => cell.marked))) {
+                        return 'Cartela Cheia';
+                    }
+                    return false;
+                };
+
+                switch (condition) {
+                    case 'full_card':
+                        return checkFullCard();
+                    case 'horizontal':
+                        return checkRows();
+                    case 'vertical':
+                        return checkCols();
+                    case 'diagonal':
+                        return checkDiagonals();
+                    default:
+                        return checkFullCard();
+                }
+            }
+
+            showWinner(message) {
+                const modal = document.createElement('div');
+                modal.className = 'winner-modal';
+                modal.innerHTML = `
+                    <div class="winner-content">
+                        <h2>🎉 BINGO! 🎉</h2>
+                        <div>${message}</div>
+                        <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 20px;" class="btn-success">
+                            <i class="fas fa-check-circle"></i> Fechar
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            showWinnerInAdminPanel(participant, winType) {
+                this.showWinner(`
+                    <span style="font-size: 1.5rem;">🎉 VITÓRIA AUTOMÁTICA DETECTADA! 🎉</span><br><br>
+                    O participante <strong>${participant.name}</strong> fez BINGO com &lt;strong&gt;${winType}&lt;/strong&gt;!&lt;br&gt;&lt;br&gt;
+                    <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <strong>🏆 Dados do Vencedor:</strong><br>
+                        <strong>📞 Contato:</strong> ${participant.phone}<br>
+                        <strong>📧 Email:</strong> ${participant.email || 'N/A'}<br>
+                        <strong>📍 Localização:</strong> ${participant.location.city}, ${participant.location.region}<br>
+                        <strong>🌐 IP:</strong> ${participant.ip}<br>
+                        <strong>💻 Dispositivo:</strong> ${participant.device}<br>
+                        <strong>🕐 Vitória em:</strong> ${participant.winTime.toLocaleString('pt-BR')}<br>
+                        <strong>🔢 ID:</strong> ${participant.id}
+                    </div>
+                `);
+            }
+
+            showAdminModal() {
+                document.getElementById('adminModal').classList.remove('hidden');
+                document.getElementById('authSection').classList.remove('hidden');
+                document.getElementById('adminPanelContent').classList.add('hidden');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('modalTitle').textContent = 'Acesso Administrativo';
+            }
+
+            closeAdminModal() {
+                document.getElementById('adminModal').classList.add('hidden');
+            }
+
+            loginAdmin() {
+                const password = document.getElementById('adminPassword').value;
+                if (password === this.adminPassword) {
+                    document.getElementById('authSection').classList.add('hidden');
+                    document.getElementById('adminPanelContent').classList.remove('hidden');
+                    document.getElementById('modalTitle').textContent = 'Painel do Administrador';
+                    this.updateStats();
+                    this.updateParticipantsList();
+                    this.showToast('Acesso administrativo concedido!', 'success');
+                } else {
+                    this.showToast('Senha incorreta.', 'error');
+                }
+            }
+
+            resetGlobalGame() {
+                this.pauseGlobalGame();
+                this.calledNumbers = [];
+                this.generateAvailableNumbers();
+                this.updateBallDisplay({ letter: '-', number: '-' });
+                this.updateCalledNumbers();
+                this.participants.forEach(p => {
+                    p.bingoCard = this.generateBingoCard();
+                    p.hasWon = false;
+                    delete p.winTime;
+                });
+                if (this.currentPlayer) {
+                    this.updatePlayerBingoCard();
+                }
+                document.getElementById('gameAlert').innerHTML = `<strong>⚠️ Atenção:</strong> Aguarde o administrador iniciar o sorteio oficial!`;
+                this.saveStoredData();
+                this.updateParticipantsList();
+                this.updateTvParticipants();
+                this.updateStats();
+                this.showToast('Jogo resetado. Novas cartelas geradas.', 'info');
+            }
+
+            clearParticipants() {
+                this.resetGlobalGame();
+                this.participants = [];
+                this.currentPlayer = null;
+                this.accessStats = { total: 0, uniqueIPs: new Set(), startTime: new Date() };
+                document.getElementById('introScreen').classList.remove('hidden');
+                document.getElementById('mainGame').classList.add('hidden');
+                document.getElementById('registrationForm').classList.add('hidden');
+                document.getElementById('bingoCard').classList.add('hidden');
+                this.saveStoredData();
+                this.updateStats();
+                this.updateParticipantsList();
+                this.updateTvParticipants();
+                this.showToast('Todos os participantes e dados foram limpos!', 'warning');
+            }
+
+            updatePlayerBingoCard() {
+                if (this.currentPlayer) {
+                    const player = this.participants.find(p => p.id === this.currentPlayer.id);
+                    if (player) {
+                        this.renderBingoCard(player.bingoCard);
+                    }
+                }
+            }
+            
+            updateWinCondition() {
+                const selectElement = document.getElementById('winCondition');
+                if (selectElement) {
+                    this.winCondition = selectElement.value;
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('showFormBtn').addEventListener('click', () => this.showForm());
+                document.getElementById('showTvBtn').addEventListener('click', () => this.showTvMode());
+                document.getElementById('joinGame').addEventListener('click', () => this.joinGame());
+                document.getElementById('playerName').addEventListener('input', () => this.validateForm());
+                document.getElementById('playerPhone').addEventListener('input', () => this.validateForm());
+                document.getElementById('declareBingo').addEventListener('click', () => this.declareBingo());
+                document.getElementById('adminButton').addEventListener('click', () => this.showAdminModal());
+                document.getElementById('loginBtn').addEventListener('click', () => this.loginAdmin());
+                document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.loginAdmin();
+                });
+                document.getElementById('startGlobalGame').addEventListener('click', () => this.startGlobalGame());
+                document.getElementById('pauseGlobalGame').addEventListener('click', () => this.pauseGlobalGame());
+                document.getElementById('resetGlobalGame').addEventListener('click', () => this.resetGlobalGame());
+                document.getElementById('clearParticipants').addEventListener('click', () => this.clearParticipants());
+                document.getElementById('openTvMode').addEventListener('click', () => {
+                    this.closeAdminModal();
+                    this.showTvMode();
+                });
+                const winConditionSelect = document.getElementById('winCondition');
+                if (winConditionSelect) {
+                    winConditionSelect.addEventListener('change', () => {
+                        this.winCondition = winConditionSelect.value;
+                    });
+                }
+                window.bingoGame = this;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            new BingoMultiplayer();
+        });
+    </script>
+</body>
+</html>
