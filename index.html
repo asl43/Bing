@@ -7,59 +7,149 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f6f1; /* Cor de marfim para o fundo principal */
+            min-height: 100vh;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; width: 100%; }
         .header { text-align: center; margin-bottom: 30px; }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); animation: pulse 2s infinite; }
-        .url-info { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; backdrop-filter: blur(10px); }
-        .url-info strong { font-size: 1.2rem; color: #ffd93d; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); animation: pulse 2s infinite; color: #444; }
+        .url-info { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .url-info strong { font-size: 1.2rem; color: #4ecdc4; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
         .bingo-image-container { position: relative; text-align: center; margin-bottom: 30px; }
-        .bingo-image { width: 100%; max-width: 600px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); transition: transform 0.5s ease; }
+        .bingo-image { width: 100%; max-width: 600px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); transition: transform 0.5s ease; }
         .bingo-image:hover { transform: scale(1.02); }
-        .start-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 15px; text-align: center; backdrop-filter: blur(5px); }
-        .start-menu button { padding: 15px 30px; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; transition: all 0.3s ease; margin: 10px; }
-        .start-menu button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
-        .participant-form, .bingo-card, .control-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; margin-bottom: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .start-menu { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .start-menu button { 
+            padding: 15px 30px; 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            background: linear-gradient(135deg, #4ecdc4, #44a08d); 
+            color: white; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+        .start-menu button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .participant-form, .bingo-card, .control-panel { 
+            background: #fff; 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
         .game-layout { display: grid; grid-template-columns: 1fr 350px; gap: 30px; }
         .bingo-section { display: grid; gap: 20px; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; background: rgba(255, 255, 255, 0.9); color: #333; transition: border-color 0.3s ease; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            background: #fdfdfd; 
+            color: #333; 
+            transition: border-color 0.3s ease; 
+        }
         .form-group input.valid { border: 2px solid #2ecc71; }
         .form-group input.invalid { border: 2px solid #e74c3c; }
         .bingo-card { padding: 30px; }
-        .player-info { text-align: center; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; }
+        .player-info { text-align: center; margin-bottom: 20px; background: #f0f0f0; padding: 15px; border-radius: 10px; }
         .bingo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 20px; }
         .bingo-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
-        .header-cell { background: #ff6b6b; color: white; text-align: center; padding: 15px; font-weight: bold; font-size: 1.2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .bingo-cell { background: rgba(255, 255, 255, 0.9); color: #333; border: none; width: 60px; height: 60px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .header-cell { 
+            background: #ff6b6b; 
+            color: white; 
+            text-align: center; 
+            padding: 15px; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        }
+        .bingo-cell { 
+            background: #e9ecef; 
+            color: #333; 
+            border: none; 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 10px; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        }
         .bingo-cell:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
         .bingo-cell.marked { background: #4ecdc4; color: white; animation: markAnimation 0.5s ease; }
         .bingo-cell.free { background: #ffd93d; color: #333; }
         @keyframes markAnimation { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.2) rotate(180deg); } 100% { transform: scale(1) rotate(360deg); } }
         .control-panel { padding: 20px; height: fit-content; }
         .current-ball { text-align: center; margin-bottom: 20px; }
-        .ball-display { width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffd93d, #ff6b6b); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin: 0 auto 15px; animation: bounce 1s infinite; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .ball-display { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            background: radial-gradient(circle at 30% 30%, #ffd93d, #ff6b6b); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2.5rem; 
+            font-weight: bold; 
+            color: white; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3); 
+            margin: 0 auto 15px; 
+            animation: bounce 1s infinite; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+        }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
         .ball-letter { font-size: 1rem; font-weight: bold; }
         .ball-display span { font-size: 2.5rem; }
         .game-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-        button { padding: 15px 25px; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        button { 
+            padding: 15px 25px; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+        }
         .btn-primary { background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; }
         .btn-success { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
         .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
         .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
         .btn-info { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
         .btn-tv { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
-        button:disabled { background: #95a5a6 !important; cursor: not-allowed; transform: none; box-shadow: none; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        button:disabled { background: #ced4da !important; cursor: not-allowed; transform: none; box-shadow: none; }
         .called-numbers { margin-top: 20px; }
         .called-numbers h3 { margin-bottom: 15px; text-align: center; }
         .numbers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; max-height: 200px; overflow-y: auto; }
-        .called-number { background: rgba(255, 255, 255, 0.2); padding: 8px; border-radius: 5px; text-align: center; font-size: 0.9rem; }
-        .winner-modal, .admin-modal, .tv-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.5s ease; }
-        .winner-content, .admin-content, .tv-content { background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); animation: slideIn 0.5s ease; max-width: 90%; max-height: 90vh; overflow-y: auto; }
+        .called-number { background: #f0f0f0; padding: 8px; border-radius: 5px; text-align: center; font-size: 0.9rem; }
+        .winner-modal, .admin-modal, .tv-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.5s ease; }
+        .winner-content, .admin-content, .tv-content { background: #fff; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideIn 0.5s ease; max-width: 90%; max-height: 90vh; overflow-y: auto; }
         .tv-content { max-width: 95%; max-height: 95vh; padding: 20px; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideIn { from { transform: translateY(-50px) scale(0.8); } to { transform: translateY(0) scale(1); } }
@@ -67,8 +157,7 @@
         @keyframes celebration { 0%, 100% { transform: rotate(-5deg) scale(1); } 50% { transform: rotate(5deg) scale(1.1); } }
         .hidden { display: none !important; }
         .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; }
-        .alert-warning { background: rgba(243, 156, 18, 0.2); border: 1px solid #f39c12; color: #f39c12; }
-        .status-info { text-align: center; font-size: 0.9rem; opacity: 0.8; margin-bottom: 20px; }
+        .alert-warning { background: #fff3cd; border: 1px solid #ffecb5; color: #856404; }
         .ip-info { font-size: 0.8rem; opacity: 0.7; text-align: center; margin-top: 10px; }
         .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1001; display: flex; flex-direction: column; gap: 10px; }
         .toast { background-color: #333; color: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); animation: toast-in 0.5s forwards, toast-out 0.5s 2.5s forwards; min-width: 250px; text-align: center; }
@@ -80,39 +169,133 @@
         @keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }
         #adminButton { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background: #ff6b6b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 999; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); transition: transform 0.3s ease; }
         #adminButton:hover { transform: scale(1.1); }
-        .admin-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .stat-card { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; text-align: center; border: 2px solid rgba(255, 255, 255, 0.2); }
-        .stat-number { font-size: 2rem; font-weight: bold; color: #4ecdc4; display: block; }
-        .stat-label { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
-        .admin-participants { margin-top: 20px; }
-        .participant-item { background: rgba(255, 255, 255, 0.1); padding: 15px; margin-bottom: 15px; border-radius: 12px; border-left: 5px solid #4ecdc4; transition: all 0.3s ease; }
-        .participant-item.winner { border-left: 5px solid #2ecc71; background: rgba(46, 204, 113, 0.2); animation: winnerGlow 2s infinite alternate; }
+
+        /* Estilos do Painel Admin */
+        .admin-modal .admin-content {
+            background: #f9f6f1; /* Cor de Marfim */
+            color: #333;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .admin-content h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 30px;
+            text-shadow: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .admin-content input, .admin-content select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #333;
+            background: white;
+        }
+        .admin-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .admin-controls button {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            display: block;
+        }
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 5px;
+            color: #555;
+        }
+        .admin-participants {
+            margin-top: 20px;
+        }
+        .admin-participants h3 {
+            color: #444;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .participant-item {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 5px solid #4ecdc4;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .participant-item.winner {
+            border-left: 5px solid #2ecc71;
+            background: #eafaf1; /* Verde claro para o vencedor */
+            animation: winnerGlow 2s infinite alternate;
+        }
         @keyframes winnerGlow { from { box-shadow: 0 0 10px rgba(46, 204, 113, 0.5); } to { box-shadow: 0 0 20px rgba(46, 204, 113, 0.8); } }
         .participant-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .participant-name { font-size: 1.2rem; font-weight: bold; color: #4ecdc4; }
-        .participant-status { font-size: 0.9rem; padding: 5px 10px; border-radius: 15px; background: rgba(255, 255, 255, 0.2); }
+        .participant-status { font-size: 0.9rem; padding: 5px 10px; border-radius: 15px; background: #e0e0e0; color: #555; }
         .participant-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.85rem; opacity: 0.9; }
-        .participant-tech { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .participant-details strong { color: #333; }
+        .participant-tech { font-size: 0.8rem; opacity: 0.7; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0; }
+        
+        /* Estilos do Modo TV */
+        .tv-content {
+            background: #f9f6f1;
+            color: #333;
+        }
         .tv-participants-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; max-height: 70vh; overflow-y: auto; }
-        .tv-participant-card { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; border-left: 5px solid #4ecdc4; transition: all 0.3s ease; }
-        .tv-participant-card.winner { border-left: 5px solid #2ecc71; background: rgba(46, 204, 113, 0.2); animation: winnerGlow 2s infinite alternate; }
+        .tv-participant-card { background: #fff; padding: 20px; border-radius: 15px; border-left: 5px solid #4ecdc4; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .tv-participant-card.winner { border-left: 5px solid #2ecc71; background: #eafaf1; animation: winnerGlow 2s infinite alternate; }
         .tv-participant-name { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; color: #4ecdc4; }
         .tv-participant-info { font-size: 1.1rem; line-height: 1.6; }
         .tv-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-        .tv-stat-card { background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 15px; text-align: center; }
+        .tv-stat-card { background: #fff; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .tv-stat-number { font-size: 2.5rem; font-weight: bold; color: #4ecdc4; display: block; }
         .tv-stat-label { font-size: 1.1rem; opacity: 0.8; margin-top: 10px; }
+        
         @media (max-width: 1024px) {
             .game-layout { grid-template-columns: 1fr; gap: 20px; }
             .tv-stats { grid-template-columns: repeat(2, 1fr); }
+            .admin-participants h3 { text-align: left; }
         }
         @media (max-width: 768px) {
             h1 { font-size: 1.8rem; }
+            .start-menu { flex-direction: column; }
             .bingo-cell { width: 45px; height: 45px; font-size: 0.9rem; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: 1fr; }
             .tv-participants-grid { grid-template-columns: 1fr; }
-            .tv-stats { grid-template-columns: repeat(2, 1fr); }
+            .tv-stats { grid-template-columns: 1fr; }
+            .admin-content, .winner-content { padding: 20px; }
         }
     </style>
 </head>
@@ -120,26 +303,26 @@
     <div class="container">
         <div class="header">
             <div class="url-info">
-                <strong>🌐 URL do Sorteio:</strong> https://asl43.github.io/Bin/<br>
+                <strong>🌐 URL do Sorteio:</strong> https://asl43.github.io/Bing/<br>
                 <small>Compartilhe este link para que outros participem!</small>
             </div>
             <h1><i class="fas fa-bullseye"></i> BINGO MULTIPLAYER</h1>
         </div>
-
+        
         <div id="introScreen">
             <div class="bingo-image-container">
                 <img src="https://i.ibb.co/6P0xH1n/bingo-image.png" alt="Imagem de Bingo" class="bingo-image">
-                <div class="start-menu">
-                    <button id="showFormBtn"><i class="fas fa-play-circle"></i> Gerar Minha Cartela</button>
-                    <button id="showTvBtn" class="btn-tv"><i class="fas fa-tv"></i> Modo TV</button>
-                </div>
             </div>
         </div>
 
-        <div id="mainGame" class="hidden">
+        <div id="mainGame">
+            <div class="start-menu" style="margin-bottom: 30px;">
+                <button id="showFormBtn" class="btn-primary"><i class="fas fa-ticket-alt"></i> Gerar Minha Cartela</button>
+                <button id="showTvBtn" class="btn-tv"><i class="fas fa-tv"></i> Modo TV</button>
+            </div>
             <div class="game-layout">
                 <div class="bingo-section">
-                    <div class="participant-form hidden" id="registrationForm">
+                    <div class="participant-form" id="registrationForm">
                         <h2><i class="fas fa-clipboard-list"></i> Participar do Sorteio</h2>
                         <div class="form-group">
                             <label for="playerName">Nome do Participante:</label>
@@ -153,7 +336,7 @@
                             <label for="playerEmail">Email (opcional):</label>
                             <input type="email" id="playerEmail" placeholder="seu@email.com">
                         </div>
-                        <button class="btn-primary" id="joinGame"><i class="fas fa-ticket-alt"></i> Gerar Minha Cartela</button>
+                        <button class="btn-success" id="joinGame"><i class="fas fa-ticket-alt"></i> Gerar Minha Cartela</button>
                         <div class="ip-info" id="ipInfo">Carregando informações...</div>
                     </div>
                     <div class="bingo-card hidden" id="bingoCard">
@@ -222,12 +405,29 @@
                 </div>
                 <div class="admin-controls">
                     <div class="form-group" style="margin-bottom: 0;">
+                        <label for="gameSize">Tamanho da Cartela:</label>
+                        <select id="gameSize" style="width: 100%;">
+                            <option value="75">75 números (BINGO)</option>
+                            <option value="50">50 números (Loterias)</option>
+                            <option value="100">100 números (Mega Bingo)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label for="winCondition">Condição de Vitória:</label>
-                        <select id="winCondition" class="btn-info" style="width: 100%; background: rgba(255,255,255,0.2); border: none; font-weight: bold; color: white;">
+                        <select id="winCondition" style="width: 100%;">
                             <option value="full_card">Cartela Cheia</option>
                             <option value="horizontal">Linha Horizontal</option>
                             <option value="vertical">Linha Vertical</option>
                             <option value="diagonal">Diagonal</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="drawSpeed">Velocidade do Sorteio:</label>
+                        <select id="drawSpeed" style="width: 100%;">
+                            <option value="5000">Lento (5s)</option>
+                            <option value="3000" selected>Normal (3s)</option>
+                            <option value="1500">Rápido (1.5s)</option>
+                            <option value="500">Instantâneo (0.5s)</option>
                         </select>
                     </div>
                     <button class="btn-success" id="startGlobalGame"><i class="fas fa-play"></i> Iniciar Sorteio</button>
@@ -296,6 +496,8 @@
                 this.currentPlayer = null;
                 this.adminPassword = 'admin123';
                 this.winCondition = 'full_card';
+                this.gameSize = 75;
+                this.drawSpeed = 3000;
                 this.accessStats = { total: 0, uniqueIPs: new Set(), startTime: new Date() };
                 this.storage = new Map();
                 this.initializeGame();
@@ -303,6 +505,9 @@
                 this.getUserInfo();
                 this.loadStoredData();
                 this.updateWinCondition();
+                this.updateGameSize();
+                this.updateDrawSpeed();
+                this.showInitialScreen();
             }
 
             initializeGame() {
@@ -340,18 +545,21 @@
 
             updateIPInfo() {
                 const now = new Date();
-                document.getElementById('ipInfo').innerHTML = `
-                    <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
-                        <strong>🔍 Informações de Acesso:</strong><br><br>
-                        <strong>🌐 IP:</strong> ${this.userIP}<br>
-                        <strong>📍 Localização:</strong> ${this.userLocation.city}, ${this.userLocation.region}<br>
-                        <strong>🏴 País:</strong> ${this.userLocation.country}<br>
-                        <strong>🏢 Provedor:</strong> ${this.userLocation.org}<br>
-                        <strong>💻 Dispositivo:</strong> ${this.deviceType}<br>
-                        <strong>🕐 Acesso em:</strong> ${now.toLocaleString('pt-BR')}<br>
-                        <strong>⏰ Fuso:</strong> ${this.userLocation.timezone}
-                    </div>
-                `;
+                const ipInfoElement = document.getElementById('ipInfo');
+                if (ipInfoElement) {
+                    ipInfoElement.innerHTML = `
+                        <div style="text-align: left; background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                            <strong>🔍 Informações de Acesso:</strong><br><br>
+                            <strong>🌐 IP:</strong> ${this.userIP}<br>
+                            <strong>📍 Localização:</strong> ${this.userLocation.city}, ${this.userLocation.region}<br>
+                            <strong>🏴 País:</strong> ${this.userLocation.country}<br>
+                            <strong>🏢 Provedor:</strong> ${this.userLocation.org}<br>
+                            <strong>💻 Dispositivo:</strong> ${this.deviceType}<br>
+                            <strong>🕐 Acesso em:</strong> ${now.toLocaleString('pt-BR')}<br>
+                            <strong>⏰ Fuso:</strong> ${this.userLocation.timezone}
+                        </div>
+                    `;
+                }
             }
 
             getDeviceType() {
@@ -439,10 +647,16 @@
                 }, 3000);
             }
 
+            showInitialScreen() {
+                document.getElementById('introScreen').classList.remove('hidden');
+                document.getElementById('registrationForm').classList.add('hidden');
+                document.getElementById('bingoCard').classList.add('hidden');
+            }
+
             showForm() {
                 document.getElementById('introScreen').classList.add('hidden');
-                document.getElementById('mainGame').classList.remove('hidden');
                 document.getElementById('registrationForm').classList.remove('hidden');
+                document.getElementById('bingoCard').classList.add('hidden');
             }
 
             showTvMode() {
@@ -526,7 +740,7 @@
                                 <small><i class="fas fa-clock"></i> ${this.currentPlayer.joinTime.toLocaleString('pt-BR')}</small>
                             </div>
                         </div>
-                        <div style="font-size: 0.8rem; opacity: 0.7; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
+                        <div style="font-size: 0.8rem; opacity: 0.7; background: #f0f0f0; padding: 10px; border-radius: 5px;">
                             <i class="fas fa-map-marker-alt"></i> ${this.currentPlayer.location.city}, ${this.currentPlayer.location.region} | <i class="fas fa-desktop"></i> ${this.currentPlayer.device}
                         </div>
                     </div>
@@ -599,13 +813,35 @@
 
             generateAvailableNumbers() {
                 this.availableNumbers = [];
-                const letters = ['B', 'I', 'N', 'G', 'O'];
-                const ranges = [[1, 15], [16, 30], [31, 45], [46, 60], [61, 75]];
-                for (let i = 0; i < 5; i++) {
-                    const letter = letters[i];
-                    const [min, max] = ranges[i];
-                    for (let num = min; num <= max; num++) {
-                        this.availableNumbers.push({ letter: letter, number: num });
+                let maxNumber;
+                let ranges;
+
+                if (this.gameSize === 50) {
+                    maxNumber = 50;
+                    ranges = { L: [1, 10], O: [11, 20], T: [21, 30], E: [31, 40], R: [41, 50] };
+                    for (const letter in ranges) {
+                        const [min, max] = ranges[letter];
+                        for (let num = min; num <= max; num++) {
+                            this.availableNumbers.push({ letter: letter, number: num });
+                        }
+                    }
+                } else if (this.gameSize === 100) {
+                    maxNumber = 100;
+                    ranges = { M: [1, 20], E: [21, 40], G: [41, 60], A: [61, 80], O: [81, 100] };
+                    for (const letter in ranges) {
+                        const [min, max] = ranges[letter];
+                        for (let num = min; num <= max; num++) {
+                            this.availableNumbers.push({ letter: letter, number: num });
+                        }
+                    }
+                } else { // Padrão 75
+                    maxNumber = 75;
+                    ranges = { B: [1, 15], I: [16, 30], N: [31, 45], G: [46, 60], O: [61, 75] };
+                    for (const letter in ranges) {
+                        const [min, max] = ranges[letter];
+                        for (let num = min; num <= max; num++) {
+                            this.availableNumbers.push({ letter: letter, number: num });
+                        }
                     }
                 }
             }
@@ -620,10 +856,9 @@
                 document.getElementById('startGlobalGame').disabled = true;
                 document.getElementById('pauseGlobalGame').disabled = false;
                 document.getElementById('gameAlert').innerHTML = `<strong>🟢 Jogo em Andamento:</strong> Números serão sorteados automaticamente!`;
-                const speed = 3000;
                 this.interval = setInterval(() => {
                     this.drawGlobalNumber();
-                }, speed);
+                }, this.drawSpeed);
                 this.updateStats();
                 this.showToast('Sorteio iniciado!', 'success');
                 this.saveStoredData();
@@ -660,7 +895,7 @@
             }
 
             playNumberAudio(letter, number) {
-                const basePath = 'https://asl43.github.io/Bin/audios/';
+                const basePath = 'https://asl43.github.io/Bing/';
                 const letterAudio = new Audio(`${basePath}${letter}.mp3`);
                 const numberAudio = new Audio(`${basePath}${number}.mp3`);
 
@@ -669,6 +904,12 @@
                         numberAudio.play().catch(e => console.error('Erro ao tocar áudio do número:', e));
                     }, letterAudio.duration * 1000 + 100);
                 }).catch(e => console.error('Erro ao tocar áudio da letra:', e));
+            }
+
+            playBingoSound() {
+                const utterance = new SpeechSynthesisUtterance('Bingo!');
+                utterance.lang = 'pt-BR';
+                window.speechSynthesis.speak(utterance);
             }
 
             updateBallDisplay(ball) {
@@ -719,6 +960,7 @@
                             this.updateParticipantsList();
                             this.updateTvParticipants();
                             this.pauseGlobalGame();
+                            this.playBingoSound();
                             this.showToast(`Bingo automático detectado para ${participant.name}!`, 'success');
                         }
                     }
@@ -814,7 +1056,7 @@
                     this.showWinner(`
                         <span style="font-size: 1.5rem;">🎉 PARABÉNS ${this.currentPlayer.name}! 🎉</span><br><br>
                         Você fez BINGO com <strong>${hasWon}</strong>!<br><br>
-                        <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <div style="text-align: left; background: #f0f0f0; padding: 20px; border-radius: 10px; margin: 20px 0;">
                             <strong>🏆 Dados do Vencedor:</strong><br>
                             <strong>📞 Contato:</strong> ${this.currentPlayer.phone}<br>
                             <strong>📧 Email:</strong> ${this.currentPlayer.email || 'N/A'}<br>
@@ -829,6 +1071,7 @@
                     this.updateParticipantsList();
                     this.updateTvParticipants();
                     this.pauseGlobalGame();
+                    this.playBingoSound();
                 } else {
                     this.showToast('Ainda não é BINGO! Continue jogando...', 'warning');
                 }
@@ -914,8 +1157,8 @@
             showWinnerInAdminPanel(participant, winType) {
                 this.showWinner(`
                     <span style="font-size: 1.5rem;">🎉 VITÓRIA AUTOMÁTICA DETECTADA! 🎉</span><br><br>
-                    O participante <strong>${participant.name}</strong> fez BINGO com &lt;strong&gt;${winType}&lt;/strong&gt;!&lt;br&gt;&lt;br&gt;
-                    <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    O participante <strong>${participant.name}</strong> fez BINGO com <strong>${winType}</strong>!<br><br>
+                    <div style="text-align: left; background: #f0f0f0; padding: 20px; border-radius: 10px; margin: 20px 0;">
                         <strong>🏆 Dados do Vencedor:</strong><br>
                         <strong>📞 Contato:</strong> ${participant.phone}<br>
                         <strong>📧 Email:</strong> ${participant.email || 'N/A'}<br>
@@ -948,6 +1191,7 @@
                     document.getElementById('modalTitle').textContent = 'Painel do Administrador';
                     this.updateStats();
                     this.updateParticipantsList();
+                    this.applyContrastColorToElements();
                     this.showToast('Acesso administrativo concedido!', 'success');
                 } else {
                     this.showToast('Senha incorreta.', 'error');
@@ -981,10 +1225,7 @@
                 this.participants = [];
                 this.currentPlayer = null;
                 this.accessStats = { total: 0, uniqueIPs: new Set(), startTime: new Date() };
-                document.getElementById('introScreen').classList.remove('hidden');
-                document.getElementById('mainGame').classList.add('hidden');
-                document.getElementById('registrationForm').classList.add('hidden');
-                document.getElementById('bingoCard').classList.add('hidden');
+                this.showInitialScreen();
                 this.saveStoredData();
                 this.updateStats();
                 this.updateParticipantsList();
@@ -1005,6 +1246,30 @@
                 const selectElement = document.getElementById('winCondition');
                 if (selectElement) {
                     this.winCondition = selectElement.value;
+                }
+            }
+
+            updateGameSize() {
+                const selectElement = document.getElementById('gameSize');
+                if (selectElement) {
+                    this.gameSize = parseInt(selectElement.value, 10);
+                    this.generateAvailableNumbers();
+                    this.calledNumbers = [];
+                    this.updateCalledNumbers();
+                    this.updateBallDisplay({ letter: '-', number: '-' });
+                }
+            }
+
+            updateDrawSpeed() {
+                const selectElement = document.getElementById('drawSpeed');
+                if (selectElement) {
+                    this.drawSpeed = parseInt(selectElement.value, 10);
+                    if (this.isGlobalGameRunning) {
+                        clearInterval(this.interval);
+                        this.interval = setInterval(() => {
+                            this.drawGlobalNumber();
+                        }, this.drawSpeed);
+                    }
                 }
             }
 
@@ -1034,7 +1299,52 @@
                         this.winCondition = winConditionSelect.value;
                     });
                 }
+                const gameSizeSelect = document.getElementById('gameSize');
+                if (gameSizeSelect) {
+                    gameSizeSelect.addEventListener('change', () => {
+                        this.updateGameSize();
+                    });
+                }
+                const drawSpeedSelect = document.getElementById('drawSpeed');
+                if (drawSpeedSelect) {
+                    drawSpeedSelect.addEventListener('change', () => {
+                        this.updateDrawSpeed();
+                    });
+                }
+
+                const adminElementsToContrast = document.querySelectorAll('.admin-content button, .admin-content input, .admin-content select');
+                adminElementsToContrast.forEach(el => {
+                    const originalBg = window.getComputedStyle(el).backgroundColor;
+                    const contrastColor = this.getContrastColor(originalBg);
+                    el.style.color = contrastColor;
+                });
+                
                 window.bingoGame = this;
+            }
+
+            getContrastColor(rgbColor) {
+                const rgb = rgbColor.match(/\d+/g);
+                if (!rgb || rgb.length < 3) return '#000000';
+                
+                const r = parseInt(rgb[0]);
+                const g = parseInt(rgb[1]);
+                const b = parseInt(rgb[2]);
+                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                
+                return luminance > 0.5 ? '#000000' : '#ffffff';
+            }
+
+            applyContrastColorToElements() {
+                const elements = document.querySelectorAll('.admin-content .stat-card, .admin-content h2, .admin-content h3, .admin-content label, .admin-content input, .admin-content select, .admin-content button, .admin-participants');
+                elements.forEach(el => {
+                    const bgColor = window.getComputedStyle(el).backgroundColor;
+                    const textColor = this.getContrastColor(bgColor);
+                    el.style.color = textColor;
+                    if (el.tagName === 'BUTTON' || el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                        el.style.color = textColor;
+                        el.style.borderColor = textColor;
+                    }
+                });
             }
         }
         document.addEventListener('DOMContentLoaded', () => {
