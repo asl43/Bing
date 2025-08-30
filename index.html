@@ -357,7 +357,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="control-panel">
+                <div class="control-panel hidden">
                     <div class="current-ball">
                         <div class="ball-display" id="ballDisplay">
                             <span id="ballLetter">-</span>
@@ -499,7 +499,7 @@
                 this.gameSize = 75;
                 this.drawSpeed = 3000;
                 this.accessStats = { total: 0, uniqueIPs: new Set(), startTime: new Date() };
-                this.storage = new Map();
+                this.storageKey = 'bingoGameData';
                 this.initializeGame();
                 this.setupEventListeners();
                 this.getUserInfo();
@@ -627,13 +627,42 @@
             }
 
             loadStoredData() {
-                console.log('Dados carregados da memória');
+                const storedData = localStorage.getItem(this.storageKey);
+                if (storedData) {
+                    const data = JSON.parse(storedData);
+                    this.participants = data.participants || [];
+                    this.calledNumbers = data.calledNumbers || [];
+                    this.isGlobalGameRunning = data.isGlobalGameRunning || false;
+                    this.adminPassword = data.adminPassword || 'admin123';
+                    this.winCondition = data.winCondition || 'full_card';
+                    this.gameSize = data.gameSize || 75;
+                    this.drawSpeed = data.drawSpeed || 3000;
+                    this.accessStats = {
+                        total: data.accessStats.total || 0,
+                        uniqueIPs: new Set(data.accessStats.uniqueIPsArray || []),
+                        startTime: data.accessStats.startTime ? new Date(data.accessStats.startTime) : new Date()
+                    };
+                    this.updateStats();
+                    this.updateCalledNumbers();
+                    this.updateBallDisplay(this.calledNumbers[this.calledNumbers.length - 1] || { letter: '-', number: '-' });
+                }
             }
 
             saveStoredData() {
-                this.storage.set('participants', JSON.stringify(this.participants));
-                this.storage.set('calledNumbers', JSON.stringify(this.calledNumbers));
-                this.storage.set('accessStats', JSON.stringify({ ...this.accessStats, uniqueIPsArray: Array.from(this.accessStats.uniqueIPs) }));
+                const dataToStore = {
+                    participants: this.participants,
+                    calledNumbers: this.calledNumbers,
+                    isGlobalGameRunning: this.isGlobalGameRunning,
+                    adminPassword: this.adminPassword,
+                    winCondition: this.winCondition,
+                    gameSize: this.gameSize,
+                    drawSpeed: this.drawSpeed,
+                    accessStats: {
+                        ...this.accessStats,
+                        uniqueIPsArray: Array.from(this.accessStats.uniqueIPs)
+                    }
+                };
+                localStorage.setItem(this.storageKey, JSON.stringify(dataToStore));
             }
 
             showToast(message, type = 'info') {
@@ -651,12 +680,16 @@
                 document.getElementById('introScreen').classList.remove('hidden');
                 document.getElementById('registrationForm').classList.add('hidden');
                 document.getElementById('bingoCard').classList.add('hidden');
+                document.getElementById('mainGame').classList.remove('game-layout');
+                document.querySelector('.control-panel').classList.add('hidden');
             }
 
             showForm() {
                 document.getElementById('introScreen').classList.add('hidden');
                 document.getElementById('registrationForm').classList.remove('hidden');
                 document.getElementById('bingoCard').classList.add('hidden');
+                document.getElementById('mainGame').classList.remove('game-layout');
+                document.querySelector('.control-panel').classList.add('hidden');
             }
 
             showTvMode() {
@@ -681,32 +714,29 @@
                     this.validateForm();
                     return;
                 }
-                const existingParticipant = this.participants.find(p => p.ip === this.userIP);
+                let existingParticipant = this.participants.find(p => p.ip === this.userIP);
                 if (existingParticipant) {
-                    this.showToast('Este IP já tem uma cartela ativa!', 'info');
+                    this.showToast('Você já tem uma cartela ativa!', 'info');
                     this.currentPlayer = existingParticipant;
                 } else {
+                    const id = Date.now().toString(36).substring(2, 8).toUpperCase();
                     this.currentPlayer = {
-                        id: Date.now(),
+                        id: id,
                         name: name,
                         phone: phone,
                         email: email,
                         ip: this.userIP,
                         location: this.userLocation,
                         device: this.deviceType,
-                        joinTime: new Date(),
+                        joinTime: new Date().toISOString(),
                         bingoCard: this.generateBingoCard(),
                         hasWon: false,
-                        lastActivity: new Date(),
-                        userAgent: navigator.userAgent,
-                        screenResolution: `${window.screen.width}x${window.screen.height}`,
-                        language: navigator.language,
-                        platform: navigator.platform
+                        lastActivity: new Date().toISOString()
                     };
                     this.participants.push(this.currentPlayer);
                     this.showToast('Cartela gerada com sucesso!', 'success');
+                    this.saveStoredData();
                 }
-                this.saveStoredData();
                 this.showBingoCard();
                 this.updateParticipantsList();
                 this.updateTvParticipants();
@@ -726,22 +756,19 @@
             showBingoCard() {
                 document.getElementById('registrationForm').classList.add('hidden');
                 document.getElementById('bingoCard').classList.remove('hidden');
+                document.getElementById('mainGame').classList.add('single-card-layout');
                 document.getElementById('playerInfo').innerHTML = `
                     <div style="text-align: left;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                             <div>
                                 <strong style="font-size: 1.3rem; color: #4ecdc4;">
-                                    <i class="fas fa-user"></i> ${this.currentPlayer.name}
+                                    <i class="fas fa-ticket-alt"></i> Cartela ${this.currentPlayer.id}
                                 </strong><br>
-                                <small><i class="fas fa-phone"></i> ${this.currentPlayer.phone}</small>
+                                <small><i class="fas fa-user"></i> ${this.currentPlayer.name}</small>
                             </div>
                             <div style="text-align: right;">
-                                <small style="opacity: 0.8;">ID: ${this.currentPlayer.id}</small><br>
-                                <small><i class="fas fa-clock"></i> ${this.currentPlayer.joinTime.toLocaleString('pt-BR')}</small>
+                                <small style="opacity: 0.8;">Gerado em: ${new Date(this.currentPlayer.joinTime).toLocaleString('pt-BR')}</small>
                             </div>
-                        </div>
-                        <div style="font-size: 0.8rem; opacity: 0.7; background: #f0f0f0; padding: 10px; border-radius: 5px;">
-                            <i class="fas fa-map-marker-alt"></i> ${this.currentPlayer.location.city}, ${this.currentPlayer.location.region} | <i class="fas fa-desktop"></i> ${this.currentPlayer.device}
                         </div>
                     </div>
                 `;
@@ -803,7 +830,7 @@
                 const isCalled = this.calledNumbers.some(ball => ball.number === clickedNumber);
                 if (isCalled) {
                     this.currentPlayer.bingoCard[col][row].marked = !this.currentPlayer.bingoCard[col][row].marked;
-                    this.currentPlayer.lastActivity = new Date();
+                    this.currentPlayer.lastActivity = new Date().toISOString();
                     this.renderBingoCard(this.currentPlayer.bingoCard);
                     this.saveStoredData();
                 } else {
@@ -913,18 +940,23 @@
             }
 
             updateBallDisplay(ball) {
-                document.getElementById('ballLetter').textContent = ball.letter;
-                document.getElementById('ballNumber').textContent = ball.number;
+                const ballLetterEl = document.getElementById('ballLetter');
+                const ballNumberEl = document.getElementById('ballNumber');
+                if (ballLetterEl && ballNumberEl) {
+                    ballLetterEl.textContent = ball.letter;
+                    ballNumberEl.textContent = ball.number;
+                }
             }
 
             updateCalledNumbers() {
                 const container = document.getElementById('calledNumbers');
+                if (!container) return;
                 container.innerHTML = '';
                 this.calledNumbers.forEach(ball => {
                     const numberDiv = document.createElement('div');
                     numberDiv.className = 'called-number';
                     numberDiv.textContent = `${ball.letter}${ball.number}`;
-                    numberDiv.title = `Sorteado em: ${ball.timestamp ? ball.timestamp.toLocaleTimeString('pt-BR') : 'N/A'}`;
+                    numberDiv.title = `Sorteado em: ${new Date(ball.timestamp).toLocaleTimeString('pt-BR')}`;
                     container.appendChild(numberDiv);
                 });
             }
@@ -955,7 +987,7 @@
                         const hasWon = this.checkWinner(participant.bingoCard, winCondition);
                         if (hasWon) {
                             participant.hasWon = true;
-                            participant.winTime = new Date();
+                            participant.winTime = new Date().toISOString();
                             this.showWinnerInAdminPanel(participant, hasWon);
                             this.updateParticipantsList();
                             this.updateTvParticipants();
@@ -983,7 +1015,7 @@
                         item.classList.add('winner');
                     }
                     const winStatus = participant.hasWon ? '🏆 VENCEDOR' : '🎮 Jogando';
-                    const lastActivity = participant.lastActivity || participant.joinTime;
+                    const lastActivity = participant.lastActivity ? new Date(participant.lastActivity).toLocaleString('pt-BR') : 'N/A';
                     item.innerHTML = `
                         <div class="participant-header">
                             <div class="participant-name">${participant.name}</div>
@@ -993,12 +1025,12 @@
                             <div><strong>📞 Telefone:</strong> ${participant.phone}</div>
                             <div><strong>📧 Email:</strong> ${participant.email || 'N/A'}</div>
                             <div><strong>📍 Localização:</strong> ${participant.location.city}, ${participant.location.region}</div>
-                            <div><strong>🏴 País:</strong> ${participant.location.country}</div>
-                            <div><strong>🕐 Entrada:</strong> ${participant.joinTime.toLocaleString('pt-BR')}</div>
-                            <div><strong>⏱️ Última Atividade:</strong> ${lastActivity.toLocaleString('pt-BR')}</div>
+                            <div><strong>🔢 Cartela:</strong> ${participant.id}</div>
+                            <div><strong>🕐 Entrada:</strong> ${new Date(participant.joinTime).toLocaleString('pt-BR')}</div>
+                            <div><strong>⏱️ Última Atividade:</strong> ${lastActivity}</div>
                         </div>
                         <div class="participant-tech">
-                            <strong>🌐 IP:</strong> ${participant.ip} | <strong>💻 Dispositivo:</strong> ${participant.device} | <strong>🔢 ID:</strong> ${participant.id}
+                            <strong>🌐 IP:</strong> ${participant.ip} | <strong>💻 Dispositivo:</strong> ${participant.device}
                         </div>
                     `;
                     container.appendChild(item);
@@ -1025,14 +1057,14 @@
                     if (participant.hasWon) {
                         card.classList.add('winner');
                     }
-                    const winStatus = participant.hasWon ? `🏆 VENCEDOR em ${participant.winTime ? participant.winTime.toLocaleString('pt-BR') : 'N/A'}` : '🎮 Participando';
+                    const winStatus = participant.hasWon ? `🏆 VENCEDOR em ${new Date(participant.winTime).toLocaleString('pt-BR')}` : '🎮 Participando';
                     card.innerHTML = `
                         <div class="tv-participant-name">${participant.name}</div>
                         <div class="tv-participant-info">
                             <div style="margin-bottom: 10px;"><strong>Status:</strong> ${winStatus}</div>
                             <div><strong>📞 Contato:</strong> ${participant.phone}</div>
                             <div><strong>📍 Local:</strong> ${participant.location.city}, ${participant.location.region}, ${participant.location.country}</div>
-                            <div><strong>🕐 Entrada:</strong> ${participant.joinTime.toLocaleString('pt-BR')}</div>
+                            <div><strong>🕐 Entrada:</strong> ${new Date(participant.joinTime).toLocaleString('pt-BR')}</div>
                             <div><strong>💻 Dispositivo:</strong> ${participant.device.split(' ')[0]} (${participant.ip})</div>
                             <div style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
                                 <strong>ID:</strong> ${participant.id}
@@ -1048,11 +1080,11 @@
                     this.showToast('Gere sua cartela para jogar!', 'warning');
                     return;
                 }
-                const winCondition = document.getElementById('winCondition').value;
+                const winCondition = this.winCondition; // Usar a condição do admin
                 const hasWon = this.checkWinner(this.currentPlayer.bingoCard, winCondition);
                 if (hasWon) {
                     this.currentPlayer.hasWon = true;
-                    this.currentPlayer.winTime = new Date();
+                    this.currentPlayer.winTime = new Date().toISOString();
                     this.showWinner(`
                         <span style="font-size: 1.5rem;">🎉 PARABÉNS ${this.currentPlayer.name}! 🎉</span><br><br>
                         Você fez BINGO com <strong>${hasWon}</strong>!<br><br>
@@ -1063,8 +1095,8 @@
                             <strong>📍 Localização:</strong> ${this.currentPlayer.location.city}, ${this.currentPlayer.location.region}<br>
                             <strong>🌐 IP:</strong> ${this.currentPlayer.ip}<br>
                             <strong>💻 Dispositivo:</strong> ${this.currentPlayer.device}<br>
-                            <strong>🕐 Vitória em:</strong> ${this.currentPlayer.winTime.toLocaleString('pt-BR')}<br>
-                            <strong>🔢 ID:</strong> ${this.currentPlayer.id}
+                            <strong>🔢 Cartela:</strong> ${this.currentPlayer.id}<br>
+                            <strong>🕐 Vitória em:</strong> ${new Date(this.currentPlayer.winTime).toLocaleString('pt-BR')}
                         </div>
                     `);
                     this.saveStoredData();
@@ -1165,8 +1197,8 @@
                         <strong>📍 Localização:</strong> ${participant.location.city}, ${participant.location.region}<br>
                         <strong>🌐 IP:</strong> ${participant.ip}<br>
                         <strong>💻 Dispositivo:</strong> ${participant.device}<br>
-                        <strong>🕐 Vitória em:</strong> ${participant.winTime.toLocaleString('pt-BR')}<br>
-                        <strong>🔢 ID:</strong> ${participant.id}
+                        <strong>🔢 Cartela:</strong> ${participant.id}<br>
+                        <strong>🕐 Vitória em:</strong> ${new Date(participant.winTime).toLocaleString('pt-BR')}
                     </div>
                 `);
             }
@@ -1189,6 +1221,8 @@
                     document.getElementById('authSection').classList.add('hidden');
                     document.getElementById('adminPanelContent').classList.remove('hidden');
                     document.getElementById('modalTitle').textContent = 'Painel do Administrador';
+                    document.getElementById('game-layout').classList.add('hidden');
+                    document.querySelector('.control-panel').classList.remove('hidden');
                     this.updateStats();
                     this.updateParticipantsList();
                     this.applyContrastColorToElements();
@@ -1246,6 +1280,7 @@
                 const selectElement = document.getElementById('winCondition');
                 if (selectElement) {
                     this.winCondition = selectElement.value;
+                    this.saveStoredData();
                 }
             }
 
@@ -1257,6 +1292,7 @@
                     this.calledNumbers = [];
                     this.updateCalledNumbers();
                     this.updateBallDisplay({ letter: '-', number: '-' });
+                    this.saveStoredData();
                 }
             }
 
@@ -1270,6 +1306,7 @@
                             this.drawGlobalNumber();
                         }, this.drawSpeed);
                     }
+                    this.saveStoredData();
                 }
             }
 
@@ -1296,7 +1333,7 @@
                 const winConditionSelect = document.getElementById('winCondition');
                 if (winConditionSelect) {
                     winConditionSelect.addEventListener('change', () => {
-                        this.winCondition = winConditionSelect.value;
+                        this.updateWinCondition();
                     });
                 }
                 const gameSizeSelect = document.getElementById('gameSize');
